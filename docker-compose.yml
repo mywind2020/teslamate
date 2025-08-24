@@ -1,0 +1,76 @@
+version: "3"
+
+services:
+  teslamate:
+    image: ccr.ccs.tencentyun.com/dhuar/teslamate:latest
+    restart: always
+    environment:
+      - ENCRYPTION_KEY=123456
+      - DATABASE_USER=teslamate
+      - DATABASE_PASS=123456
+      - DATABASE_NAME=teslamate
+      - DATABASE_HOST=database
+      - MQTT_HOST=mosquitto
+      - TZ=Asia/Shanghai
+    volumes:
+      - ./import:/opt/app/import
+    cap_drop:
+      - all
+
+  database:
+    image: ccr.ccs.tencentyun.com/dhuar/postgres:17
+    restart: always
+    environment:
+      - POSTGRES_USER=teslamate
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=teslamate
+    volumes:
+      - teslamate-db:/var/lib/postgresql/data
+  grafana:
+    image: ccr.ccs.tencentyun.com/dhuar/grafana:latest
+    restart: always
+    environment:
+      - DATABASE_USER=teslamate
+      - DATABASE_PASS=123456
+      - DATABASE_NAME=teslamate
+      - DATABASE_HOST=database
+    volumes:
+      - teslamate-grafana-data:/var/lib/grafana
+
+  mosquitto:
+    image: ccr.ccs.tencentyun.com/dhuar/eclipse-mosquitto:2
+    restart: always
+    command: mosquitto -c /mosquitto-no-auth.conf
+    volumes:
+      - mosquitto-conf:/mosquitto/config
+      - mosquitto-data:/mosquitto/data
+  extras:
+    image: ccr.ccs.tencentyun.com/dhuar/teslamate-extras:latest
+    environment:
+      - DATABASE_USER=teslamate
+      - DATABASE_PASS=123456
+      - DATABASE_NAME=teslamate
+      - DATABASE_HOST=database
+      - MQTT_HOST=mosquitto
+    volumes:
+       - teslamate-extras-conf:/app/config
+    restart: always
+  web:
+    image: ccr.ccs.tencentyun.com/dhuar/nginx:1.25.2
+    restart: always
+    volumes:
+     - ./templates:/etc/nginx/templates
+     - ./.htpasswd:/etc/nginx/.htpasswd:ro
+    ports:
+     - "15000:15000"
+     - "4000:4000"
+     - "3000:3000"
+    environment:
+     - NGINX_PORT=80
+
+volumes:
+  teslamate-db:
+  teslamate-grafana-data:
+  mosquitto-conf:
+  mosquitto-data:
+  teslamate-extras-conf:
