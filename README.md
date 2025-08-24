@@ -29,7 +29,7 @@ TeslaMate中文版修正了TeslaMate在国内使用的各种问题,并添加了�
    ```
 3. **克隆项目**
    ```bash
-   git clone https://github.com/your-username/teslamate-cn.git teslamate
+   git clone https://github.com/mywind2020/teslamate.git
    ```
 4. **进入teslamate文件夹**
    ```bash
