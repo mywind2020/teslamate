@@ -1,5 +1,4 @@
 #!/bin/bash
-
 echo -n "请输入您要创建用户名："
 read USER_NAME 
 echo -n "请输入您要创建的密码："
@@ -13,6 +12,7 @@ PASSWORD_HASH=$(openssl passwd -apr1 "$PASSWD")
 echo "$USER_NAME:$PASSWORD_HASH" > .htpasswd
 
 echo "密码文件已创建: .htpasswd"
+chmod 666 .htpasswd
 
 # 检查 web 容器是否在运行
 if docker compose ps web | grep -q "Up"; then
