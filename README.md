@@ -13,6 +13,11 @@ TeslaMate中文版修正了TeslaMate在国内使用的各种问题,并添加了�
 - 使用高德地图替换原有的开源地图，可以显示精确的位置信息，而不是xx路
 - 为TeslaMate添加了安全认证功能,防止数据泄露
 
+## 相关界面
+### 手机访问支持
+![TeslaMate中文版界面](https://www.teslamate.com.cn/img/extras/extras_1.png)
+
+
 ## 🚀 快速开始
 
 ### 要求
@@ -51,3 +56,12 @@ TeslaMate中文版修正了TeslaMate在国内使用的各种问题,并添加了�
 
 ### 微信绑定
 浏览器访问 http://ip:15000 (将ip替换成服务器ip) ,页面上有二维码,直接扫码绑定后即可在公众号内访问和接收消息推送.
+默认的用户名密码都是admin
+
+### 修改密码
+   ```bash
+   bash htpasswd.sh
+   ```
+ grafana的密码自行在网页内修改
+  
+   
