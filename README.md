@@ -16,34 +16,38 @@ TeslaMate中文版修正了TeslaMate在国内使用的各种问题,并添加了�
 ## 🚀 快速开始
 
 ### 要求
- - 本文档假定您对linux和docker有一定的了解.
+ - 本脚本可以用于全新安装
+ - 也可以用于已安装teslamate的情况下升级到teslamate中文版.
  - 如果有任何问题,可以参考 [TeslaMate中文文档](https://teslamate.com.cn)
-### 安装步骤
+### 全新安装
 1. **切换到root** 
     ```bash
    sudo su
    ```
-2. **选择文件夹**
-   ``` bash
-   cd /opt
-   ```
-3. **创建teslamate文件夹（已存在直接跳过）**
+2. **创建teslamate文件夹**
    ```bash
-   mkdir -p teslamate
+   mkdir -p /opt/teslamate && cd teslamate
    ```
-4. **进入teslamate文件夹**
+3. **下载一键安装脚本并安装**
    ```bash
-   cd teslamate
+   wget http://download.dhuar.com/teslamate/docker/upgrade/install.sh -O install.sh && bash install.sh
    ```
-5. **下载一键安装脚本**
+### 已有TeslaMate,升级到中文版
+1. **切换到root** 
+    ```bash
+   sudo su
+   ```
+2. **进入teslamate文件夹**
    ```bash
-   wget http://download.dhuar.com/teslamate/docker/upgrade/install.sh
+   cd /opt/teslamate
    ```
-6. **执行一键安装脚本**
+3. **下载一键安装脚本并执行**
    ```bash
-   bash install.sh
+   wget http://download.dhuar.com/teslamate/docker/upgrade/install.sh -O install.sh && bash install.sh
    ```
-7.  **启动服务**
-   ```bash
-   bash start.sh
-   ```
+
+### 如何使用
+详细使用方法请参考文档：[https://www.teslamate.com.cn/docs/installation/auto#用法](https://www.teslamate.com.cn/docs/installation/auto#用法)
+
+### 微信绑定
+浏览器访问 http://ip:15000 (将ip替换成服务器ip) ,页面上有二维码,直接扫码绑定后即可在公众号内访问和接收消息推送.
