@@ -45,11 +45,11 @@ TeslaMate中文版修正了TeslaMate在国内使用的各种问题,并添加了�
    ```
 2. **创建teslamate文件夹**
    ```bash
-   mkdir -p /opt/teslamate && cd teslamate
+   mkdir -p /opt/teslamate && cd /opt/teslamate
    ```
 3. **下载一键安装脚本并安装**
    ```bash
-   wget http://download.dhuar.com/teslamate/docker/upgrade/install.sh -O install.sh && bash install.sh
+   curl -fsSL http://download.dhuar.com/teslamate/docker/upgrade/install.sh -o install.sh && bash install.sh
    ```
 ### 已有TeslaMate,升级到中文版
 1. **切换到root** 
@@ -62,7 +62,7 @@ TeslaMate中文版修正了TeslaMate在国内使用的各种问题,并添加了�
    ```
 3. **下载一键安装脚本并执行**
    ```bash
-   wget http://download.dhuar.com/teslamate/docker/upgrade/install.sh -O install.sh && bash install.sh
+   curl -fsSL http://download.dhuar.com/teslamate/docker/upgrade/install.sh -o install.sh && bash install.sh
    ```
 
 ### 如何使用

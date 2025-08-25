@@ -329,6 +329,67 @@ else
 fi
 
 echo ""
+echo -e "${YELLOW}检查 Docker 位置...${NC}"
+if command -v docker >/dev/null 2>&1; then
+    docker_path=$(which docker)
+    echo -e "${GREEN}✓ Docker 位置: $docker_path${NC}"
+    
+    # 检查 Docker 是否可执行
+    if [ -x "$docker_path" ]; then
+        echo -e "${GREEN}✓ Docker 可执行权限正常${NC}"
+    else
+        echo -e "${RED}⚠ Docker 可执行权限异常${NC}"
+    fi
+    
+    # 检查 Docker 版本
+    docker_version=$(docker --version 2>/dev/null)
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✓ Docker 版本: $docker_version${NC}"
+    else
+        echo -e "${RED}⚠ 无法获取 Docker 版本信息${NC}"
+    fi
+else
+    echo -e "${YELLOW}⚠ Docker 未安装，正在使用阿里云镜像源自动安装...${NC}"
+    echo -e "${YELLOW}================================${NC}"
+    
+    # 检查 get-docker.sh 脚本是否存在
+    if [ -f "./get-docker.sh" ]; then
+        echo -e "${YELLOW}使用 get-docker.sh 脚本安装 Docker...${NC}"
+        if bash get-docker.sh --mirror Aliyun; then
+            echo -e "${YELLOW}================================${NC}"
+            echo -e "${GREEN}✅ Docker 安装成功！${NC}"
+            
+            # 启动 Docker 服务
+            echo -e "${YELLOW}启动 Docker 服务...${NC}"
+            if systemctl start docker; then
+                echo -e "${GREEN}✓ Docker 服务启动成功${NC}"
+            else
+                echo -e "${YELLOW}⚠ Docker 服务启动可能失败，请手动检查${NC}"
+            fi
+            
+            # 重新检查 Docker 位置
+            if command -v docker >/dev/null 2>&1; then
+                docker_path=$(which docker)
+                echo -e "${GREEN}✓ Docker 安装位置: $docker_path${NC}"
+                docker_version=$(docker --version 2>/dev/null)
+                if [ $? -eq 0 ]; then
+                    echo -e "${GREEN}✓ Docker 版本: $docker_version${NC}"
+                fi
+            fi
+        else
+            echo -e "${YELLOW}================================${NC}"
+            echo -e "${RED}❌ Docker 安装失败！${NC}"
+            echo -e "${YELLOW}请手动安装 Docker 后重试${NC}"
+            exit 1
+        fi
+    else
+        echo -e "${RED}❌ 错误: get-docker.sh 脚本不存在${NC}"
+        echo -e "${YELLOW}请确保 get-docker.sh 脚本已正确下载${NC}"
+        exit 1
+    fi
+fi
+
+echo ""
 echo -e "${YELLOW}检查 database 镜像版本...${NC}"
 
 # 获取当前 database 镜像
@@ -353,6 +414,45 @@ if [ "$database_image" != "null" ] && [ -n "$database_image" ]; then
         if [ -z "$user_input" ] || [ "$user_input" = "yes" ] || [ "$user_input" = "YES" ] || [ "$user_input" = "y" ] || [ "$user_input" = "Y" ]; then
             echo ""
             echo -e "${YELLOW}正在重启 TeslaMate 服务...${NC}"
+            
+            # 检查 Docker 是否已安装
+            echo -e "${YELLOW}检查 Docker 安装状态...${NC}"
+            if command -v docker >/dev/null 2>&1; then
+                echo -e "${GREEN}✓ Docker 已安装${NC}"
+                docker_version=$(docker --version)
+                echo -e "${GREEN}  Docker 版本: $docker_version${NC}"
+            else
+                echo -e "${YELLOW}⚠ Docker 未安装，正在使用阿里云镜像源安装...${NC}"
+                echo -e "${YELLOW}================================${NC}"
+                
+                # 检查 get-docker.sh 脚本是否存在
+                if [ -f "./get-docker.sh" ]; then
+                    echo -e "${YELLOW}使用 get-docker.sh 脚本安装 Docker...${NC}"
+                    if bash get-docker.sh --mirror Aliyun; then
+                        echo -e "${YELLOW}================================${NC}"
+                        echo -e "${GREEN}✅ Docker 安装成功！${NC}"
+                        
+                        # 启动 Docker 服务
+                        echo -e "${YELLOW}启动 Docker 服务...${NC}"
+                        if systemctl start docker; then
+                            echo -e "${GREEN}✓ Docker 服务启动成功${NC}"
+                        else
+                            echo -e "${YELLOW}⚠ Docker 服务启动可能失败，请手动检查${NC}"
+                        fi
+                    else
+                        echo -e "${YELLOW}================================${NC}"
+                        echo -e "${RED}❌ Docker 安装失败！${NC}"
+                        echo -e "${YELLOW}请手动安装 Docker 后重试${NC}"
+                        exit 1
+                    fi
+                else
+                    echo -e "${RED}❌ 错误: get-docker.sh 脚本不存在${NC}"
+                    echo -e "${YELLOW}请确保 get-docker.sh 脚本已正确下载${NC}"
+                    exit 1
+                fi
+            fi
+            
+            echo ""
             
             # 先停止服务
             echo -e "${YELLOW}正在停止现有服务...${NC}"
