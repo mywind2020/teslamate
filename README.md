@@ -27,23 +27,23 @@ TeslaMate中文版修正了TeslaMate在国内使用的各种问题,并添加了�
    ``` bash
    cd /opt
    ```
-3. **克隆项目**
+3. **创建teslamate文件夹（已存在直接跳过）**
    ```bash
-   git clone https://github.com/mywind2020/teslamate.git
+   mkdir -p teslamate
    ```
 4. **进入teslamate文件夹**
    ```bash
    cd teslamate
    ```
-5. **安装docker**
+5. **下载一键安装脚本**
    ```bash
-   bash get-docker.sh --mirror Aliyun
+   wget http://download.dhuar.com/teslamate/docker/upgrade/install.sh
    ```
-6. 设置访问密码
+6. **执行一键安装脚本**
    ```bash
-   bash htpasswd.sh
+   bash install.sh
    ```
-7. **启动服务**
+7.  **启动服务**
    ```bash
    bash start.sh
    ```
