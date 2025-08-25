@@ -17,6 +17,20 @@ TeslaMate中文版修正了TeslaMate在国内使用的各种问题,并添加了�
 ### 手机访问支持
 ![TeslaMate中文版界面](https://www.teslamate.com.cn/img/extras/extras_1.png)
 
+### 微信推送
+![微信推送](https://www.teslamate.com.cn/img/extras/extras_2.png)
+
+### 高德地图替代开源地图
+- teslamate自带的是开源地图，在国内使用总是有不尽如意的地方，地图信息不详细，不准确，显示效果也不尽如意，字体特别模糊，全是xx路，甚至有时连路都不显示，只能显示到区县。完全不知道在哪里。。
+- 高德地图字体清晰，相关信息详细准确，由于是国内服务器，加载速度也大大提高
+![高德地图与开源地图对比](https://www.teslamate.com.cn/img/teslamatebox/map_compare.png)
+
+### 地址显示对比
+
+- 下图展示了高德地图与开源地图在地址显示上的区别。高德地图能够显示详细的街道和门牌号信息，而开源地图往往只显示到区县或模糊的路名，无法满足精确定位的需求。
+![高德地图与开源地图地址对比](https://www.teslamate.com.cn/img/teslamatebox/address_compare.png)
+
+
 
 ## 🚀 快速开始
 
