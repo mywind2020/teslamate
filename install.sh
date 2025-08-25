@@ -47,6 +47,16 @@ else
     echo -e "${GREEN}yq 工具已存在${NC}"
 fi
 
+# 添加 yq 工具可执行权限
+echo -n "添加 yq 工具可执行权限... "
+if chmod +x "./yq"; then
+    echo -e "${GREEN}成功${NC}"
+else
+    echo -e "${RED}失败${NC}"
+    echo -e "${RED}错误: 无法设置 yq 工具可执行权限${NC}"
+    exit 1
+fi
+
 # 验证 yq 工具
 if ! ./yq --version >/dev/null 2>&1; then
     echo -e "${RED}错误: yq 工具无法正常运行${NC}"
