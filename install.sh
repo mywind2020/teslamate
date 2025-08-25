@@ -26,7 +26,6 @@ if [ ! -f "./yq" ]; then
     if command -v curl >/dev/null 2>&1; then
         if curl -fsSL "${BASE_URL}/yq_linux_amd64" -o "yq"; then
             echo -e "${GREEN}成功${NC}"
-            chmod +x yq
         else
             echo -e "${RED}失败${NC}"
             echo -e "${RED}错误: 无法下载 yq 工具${NC}"
@@ -35,7 +34,6 @@ if [ ! -f "./yq" ]; then
     elif command -v wget >/dev/null 2>&1; then
         if wget -qO "yq" "${BASE_URL}/yq_linux_amd64"; then
             echo -e "${GREEN}成功${NC}"
-            chmod +x yq
         else
             echo -e "${RED}失败${NC}"
             echo -e "${RED}错误: 无法下载 yq 工具${NC}"
@@ -79,8 +77,6 @@ for file in "${SCRIPT_FILES[@]}"; do
     if [[ "$DOWNLOAD_CMD" == "curl -fsSL" ]]; then
         if curl -fsSL "${BASE_URL}/${file}" -o "${file}"; then
             echo -e "${GREEN}成功${NC}"
-            # 给脚本文件添加执行权限
-            chmod +x "${file}"
         else
             echo -e "${RED}失败${NC}"
             echo -e "${RED}警告: 无法下载 ${file}${NC}"
@@ -88,8 +84,6 @@ for file in "${SCRIPT_FILES[@]}"; do
     else
         if wget -qO "${file}" "${BASE_URL}/${file}"; then
             echo -e "${GREEN}成功${NC}"
-            # 给脚本文件添加执行权限
-            chmod +x "${file}"
         else
             echo -e "${RED}失败${NC}"
             echo -e "${RED}警告: 无法下载 ${file}${NC}"
@@ -219,55 +213,45 @@ else
     ./yq eval 'del(.services.grafana.ports)' -i docker-compose.yml
     echo -e "${GREEN}完成${NC}"
     
-    # 检查并添加 extras 服务
-    echo -n "检查 extras 服务... "
-    if ./yq eval '.services | has("extras")' docker-compose.yml | grep -q "false"; then
-        echo -e "${YELLOW}不存在，正在添加${NC}"
-        ./yq eval '.services.extras = {
-            "image": "ccr.ccs.tencentyun.com/dhuar/teslamate-extras:latest",
-            "environment": [
-                "DATABASE_USER=teslamate",
-                "DATABASE_PASS=123456", 
-                "DATABASE_NAME=teslamate",
-                "DATABASE_HOST=database",
-                "MQTT_HOST=mosquitto"
-            ],
-            "volumes": ["teslamate-extras-conf:/app/config"],
-            "restart": "always"
-        }' -i docker-compose.yml
-        echo -e "${GREEN}extras 服务添加完成${NC}"
-    else
-        echo -e "${GREEN}已存在${NC}"
-    fi
+    # 添加或覆盖 extras 服务
+    echo -n "配置 extras 服务... "
+    ./yq eval '.services.extras = {
+        "image": "ccr.ccs.tencentyun.com/dhuar/teslamate-extras:latest",
+        "environment": [
+            "DATABASE_USER=teslamate",
+            "DATABASE_PASS=123456", 
+            "DATABASE_NAME=teslamate",
+            "DATABASE_HOST=database",
+            "MQTT_HOST=mosquitto"
+        ],
+        "volumes": ["teslamate-extras-conf:/app/config"],
+        "restart": "always"
+    }' -i docker-compose.yml
+    echo -e "${GREEN}完成${NC}"
     
-    # 检查并添加 web 服务
-    echo -n "检查 web 服务... "
-    if ./yq eval '.services | has("web")' docker-compose.yml | grep -q "false"; then
-        echo -e "${YELLOW}不存在，正在添加${NC}"
-        ./yq eval '.services.web = {
-            "image": "ccr.ccs.tencentyun.com/dhuar/nginx:1.25.2",
-            "restart": "always",
-            "volumes": [
-                "./templates:/etc/nginx/templates",
-                "./.htpasswd:/etc/nginx/.htpasswd:ro"
-            ],
-            "ports": [
-                "15000:15000",
-                "4000:4000", 
-                "3000:3000"
-            ],
-            "environment": ["NGINX_PORT=80"]
-        }' -i docker-compose.yml
-        echo -e "${GREEN}web 服务添加完成${NC}"
-    else
-        echo -e "${GREEN}已存在${NC}"
-    fi
+    # 添加或覆盖 web 服务
+    echo -n "配置 web 服务... "
+    ./yq eval '.services.web = {
+        "image": "ccr.ccs.tencentyun.com/dhuar/nginx:1.25.2",
+        "restart": "always",
+        "volumes": [
+            "./templates:/etc/nginx/templates",
+            "./.htpasswd:/etc/nginx/.htpasswd:ro"
+        ],
+        "ports": [
+            "15000:15000",
+            "4000:4000", 
+            "3000:3000"
+        ],
+        "environment": ["NGINX_PORT=80"]
+    }' -i docker-compose.yml
+    echo -e "${GREEN}完成${NC}"
     
     # 检查并添加必要的 volumes
     echo -n "检查 teslamate-extras-conf volume... "
     if ./yq eval '.volumes | has("teslamate-extras-conf")' docker-compose.yml | grep -q "false"; then
         echo -e "${YELLOW}不存在，正在添加${NC}"
-        ./yq eval '.volumes."teslamate-extras-conf" = null' -i docker-compose.yml
+        ./yq eval '.volumes."teslamate-extras-conf".driver = "local"' -i docker-compose.yml
         echo -e "${GREEN}volume 添加完成${NC}"
     else
         echo -e "${GREEN}已存在${NC}"
@@ -281,7 +265,7 @@ echo -e "${GREEN}=== 安装/更新完成 ===${NC}"
 echo ""
 echo -e "${YELLOW}提示:${NC}"
 echo "- yq 工具已下载并可用于后续的 YAML 处理"
-echo "- 所有脚本文件已更新并设置为可执行 (包括 get-docker.sh)"
+echo "- 所有脚本文件已下载更新 (包括 get-docker.sh)"
 echo "- .htpasswd 文件权限已设置为 666"
 echo "- templates 文件夹已确保存在"
 echo "- default.conf.template 模板文件已更新"
@@ -289,14 +273,51 @@ echo "- docker-compose.yml 已使用 yq 工具安全处理："
 echo "  * teslamate、grafana、mosquitto 镜像路径已更新"
 echo "  * database 镜像版本将在最后进行检查"
 echo "  * 已移除 teslamate 和 grafana 的 ports 配置"
-echo "  * extras 和 web 服务已确保存在"
+echo "  * extras 和 web 服务已配置完成（存在时会覆盖）"
+echo "  * extras 服务环境变量将自动从 teslamate 同步"
 echo "  * teslamate-extras-conf volume 已确保存在"
 echo "- 原 docker-compose.yml 已备份为 docker-compose.yml.backup"
-echo "- 您现在可以使用 ./start.sh 启动 TeslaMate"
+echo "- 您现在可以使用 bash start.sh 启动 TeslaMate"
 echo ""
 
-# 最终检查 database 镜像版本
+# 最终检查
 echo -e "${GREEN}=== 最终检查 ===${NC}"
+echo ""
+
+# 同步 extras 环境变量与 teslamate 保持一致
+echo -e "${YELLOW}同步 extras 服务环境变量...${NC}"
+
+# 获取 teslamate 的关键环境变量
+env_vars_to_sync=("DATABASE_USER" "DATABASE_PASS" "DATABASE_NAME" "DATABASE_HOST" "MQTT_HOST")
+sync_completed=true
+
+echo "正在从 teslamate 同步环境变量到 extras..."
+
+for var in "${env_vars_to_sync[@]}"; do
+    teslamate_val=$(./yq eval ".services.teslamate.environment[]" docker-compose.yml 2>/dev/null | grep "^${var}=" | cut -d'=' -f2-)
+    
+    if [ -n "$teslamate_val" ]; then
+        echo -n "同步 ${var}=${teslamate_val}... "
+        
+        # 更新 extras 服务的环境变量
+        if ./yq eval ".services.extras.environment |= map(select(. | test(\"^${var}=\") | not)) + [\"${var}=${teslamate_val}\"]" -i docker-compose.yml; then
+            echo -e "${GREEN}完成${NC}"
+        else
+            echo -e "${RED}失败${NC}"
+            sync_completed=false
+        fi
+    else
+        echo -e "${YELLOW}⚠ teslamate 中未找到 ${var} 环境变量${NC}"
+        sync_completed=false
+    fi
+done
+
+if [ "$sync_completed" = true ]; then
+    echo -e "${GREEN}✓ 所有环境变量已同步完成${NC}"
+else
+    echo -e "${YELLOW}⚠ 部分环境变量同步可能存在问题${NC}"
+fi
+
 echo ""
 echo -e "${YELLOW}检查 database 镜像版本...${NC}"
 
@@ -312,7 +333,49 @@ if [ "$database_image" != "null" ] && [ -n "$database_image" ]; then
     if [ -n "$version" ] && [ "$version" -ge 17 ] 2>/dev/null; then
         echo -e "${GREEN}✓ PostgreSQL 版本 $version 符合要求 (≥17)${NC}"
         echo ""
-        echo -e "${GREEN}🎉 所有检查通过！系统已准备就绪。${NC}"
+        echo -e "${GREEN}🎉 所有检查通过！${NC}"
+        echo ""
+        echo -e "${YELLOW}是否要重启 TeslaMate 服务以应用新配置？${NC}"
+        echo -e "${YELLOW}这将先停止现有服务，然后重新启动。${NC}"
+        echo -n "请输入 no 跳过重启，或按回车键确认重启 [Y/n]: "
+        read user_input
+        
+        if [ -z "$user_input" ] || [ "$user_input" = "yes" ] || [ "$user_input" = "YES" ] || [ "$user_input" = "y" ] || [ "$user_input" = "Y" ]; then
+            echo ""
+            echo -e "${YELLOW}正在重启 TeslaMate 服务...${NC}"
+            
+            # 先停止服务
+            echo -e "${YELLOW}正在停止现有服务...${NC}"
+            echo -e "${YELLOW}================================${NC}"
+            if bash stop.sh; then
+                echo -e "${YELLOW}================================${NC}"
+                echo -e "${GREEN}服务停止完成${NC}"
+            else
+                echo -e "${YELLOW}================================${NC}"
+                echo -e "${YELLOW}服务可能未运行或停止时出现问题${NC}"
+            fi
+            
+            echo ""
+            
+            # 然后启动服务
+            echo -e "${YELLOW}正在启动 TeslaMate 服务...${NC}"
+            echo -e "${YELLOW}================================${NC}"
+            if bash start.sh; then
+                echo -e "${YELLOW}================================${NC}"
+                echo -e "${GREEN}✅ TeslaMate 已成功启动！${NC}"
+            else
+                echo -e "${YELLOW}================================${NC}"
+                echo -e "${RED}❌ TeslaMate 启动失败，请检查配置或手动启动${NC}"
+                echo -e "${YELLOW}您可以尝试手动执行：${NC}"
+                echo -e "${GREEN}bash start.sh${NC}"
+            fi
+        else
+            echo ""
+            echo -e "${GREEN}已跳过重启操作${NC}"
+            echo -e "${YELLOW}配置已更新，您可以稍后手动重启：${NC}"
+            echo -e "${GREEN}bash stop.sh${NC}"
+            echo -e "${GREEN}bash start.sh${NC}"
+        fi
     else
         echo -e "${RED}❌ PostgreSQL 版本检查失败！${NC}"
         echo -e "${YELLOW}当前镜像: $database_image${NC}"
